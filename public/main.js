@@ -1,20 +1,19 @@
 /**
  * true => X
- * falso => 0
+ * false => 0
  */
-var juego = true;
+(function() {
 
 function $(selector) {
     return document.querySelector(selector);
 }
 
 function jugar(seleccionado) {
-    if(juego) {
+    if(true) {
         seleccionado.innerHTML = "X";
     }
-    else {
-        seleccionado.innerHTML = "O";
-    }
+    seleccionado.innerHTML = "O";
+    
 }
 
 function definir_eventos() {
@@ -24,8 +23,9 @@ function definir_eventos() {
         var element = elements[i];
 
         element.addEventListener("click", function(){
-            console.log("working?");
-            jugar(this);
+            //console.log(this.id);
+            var position = this.id.split("-")[1];
+            socket.play(position);
         });
     }
 
@@ -37,10 +37,52 @@ function build_cat() {
 
         $("#cat").innerHTML += item;
     }
+    definir_eventos();
 }
 
 function build_item(i) {
     return "<div class='cat-element col-sm-4' id='elemento-"+i+"'></div>";
 }
 
+function convertir_figura(bandera) {
+    if(bandera) {
+        return "X";
+    }
+    return "O"; 
+    
+}
+
+function reset() {
+    
+    var elements = document.querySelectorAll(".cat-element");
+    for(var i = 0; i < elements.length; i++) {
+        elements[i].innerHTML = "";
+    }
+}
+
 build_cat();
+
+var socket = new Socket(function(figura) {
+    var figura_string = convertir_figura(figura);
+    //console.log(figura);
+    Swal.fire(figura_string + " gano la partida");
+},function(position, figura) {
+    $("#elemento-"+position).innerHTML = convertir_figura(figura);
+}, function() {
+    Swal.fire("Alguien ingreso", "Reiniciando el tablero");
+    reset();
+}, function() {
+    Swal.fire("No es tu turno", "Espera tu turno");
+}, function(figura) {
+    $("#message").innerHTML = "Juegas con la "+ figura;
+    /*if(figura == "X") {
+        $("#message").innerHTML += " <br> Es tu turno";
+    }
+    else {
+        $("#message").innerHTML += " <br> No es tu turno";
+    }*/
+}/*, function() {
+    Swal.fire("Empate", "Nadie gano");
+}*/);
+
+})();
